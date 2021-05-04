@@ -1,0 +1,109 @@
+<?php
+
+try{
+
+	$data = $_POST['data'];
+
+	if($data == null ){
+		throw new Exception;
+	}
+	
+	database($data);	
+
+}catch(Exception $e){
+	header('Content-type: text/plain');
+	echo "error";
+}
+
+function database($mapData){
+require_once 'login.php';
+
+$conn = mysql_connect($dbHost,$dbUser,$dbPass) or die("connect failed");
+
+if(!mysql_select_db($dbName,$conn)){
+	echo "select db".mysql_errno($conn).":".mysql_error($conn)."<br/>\n";
+
+}
+$timestamp = time();
+$tableName = date('md',$timestamp);
+$strTableName = 'e'.strval($tableName);
+
+switch($mapData){
+	case "start":
+		$dropDb = 'DROP DATABASE radiomap;';
+		if(!mysql_query($dropDb, $conn)){		
+			echo "drop database".mysql_errno($conn).":".mysql_error($conn)."<br/>\n";
+		}
+
+		$createDb = 'CREATE DATABASE radiomap;';
+		if(!mysql_query($createDb, $conn)){
+                        echo "create database".mysql_errno($conn).":".mysql_error($conn)."<br/>\n";
+                }
+
+		if(!mysql_select_db($dbName,$conn)){
+			echo "select db".mysql_errno($conn).":".mysql_error($conn)."<br/>\n";
+		}
+
+		$query = 'CREATE TABLE '.$strTableName.'(
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			latitude DOUBLE,
+			longitude DOUBLE,
+			elevation DOUBLE,
+			resolution INT);';
+	
+		if(!mysql_query($query,$conn)){
+			echo "create table".mysql_errno($conn).":".mysql_error($conn)."<br/>\n";
+		}
+		break;
+
+	case "finished":
+		mysql_close($conn) or die('not closed');
+		
+		$img = file_get_contents("image/err.jpg");
+                $img_str = base64_encode($img);
+                header('Content-type: image/jpeg');
+                echo $img_str;
+		break;
+
+	default:
+		foreach($mapData as $data){
+			foreach($data as $key => $value){
+				switch($key){
+					case "latitude":
+						$latitude = addslashes($value);
+						break;
+					case "longitude":
+						$longitude = addslashes($value);
+						break;
+					case "elevation":
+						$elevation = addslashes($value);
+						break;
+					case "resolution":
+						$resolution = addslashes($value);
+						break;
+				}
+			}
+			$addRecord = <<<EOS
+				INSERT INTO `{$strTableName}`
+				(
+				latitude,
+				longitude,
+				elevation,
+				resolution
+				)
+				VALUES
+				(
+				'{$latitude}',
+				'{$longitude}',
+				'{$elevation}',
+				'{$resolution}'
+				)
+EOS;
+			if(!mysql_query($addRecord,$conn)){
+       		  	       echo "insert into".mysql_errno($conn).":".mysql_error($conn)."\n";
+       			}
+		}
+		echo $mapData.length;
+}
+}
+?>

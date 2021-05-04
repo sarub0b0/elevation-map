@@ -1,0 +1,3 @@
+#!/bin/bash
+dmcs mono-test.cs -r:System.Data.dll -r:MySql.Data.dll -r:System.Drawing.dll 
+

@@ -1,0 +1,78 @@
+using System;
+using System.Data;
+using MySql.Data.MySqlClient;
+using System.IO;
+using System.Collections.Generic;
+using System.Text;
+
+
+namespace test{
+	class database
+	{ 
+		static void Main(string[] args)
+		{
+
+			MySqlConnection dbconn = null;
+
+			// Connection Parameter
+			string server = "192.168.15.30";
+			string database = "radiomap";
+			string user = "kosei";
+			string pass = "radiradio";
+
+			// Connection String
+			string myConnectionStr = string.Format(
+					"Server={0};Database={1};Uid={2};Pwd={3}",
+					server,
+					database,
+					user,
+					pass);
+
+			try
+			{
+				// Connection database
+				dbconn = new MySqlConnection(myConnectionStr);
+
+				// SELECT id, elevation from table
+				string query = string.Format("SELECT id, elevation from {0}",args);
+
+				MySqlDataAdapter mda = new MySqlDataAdapter(query, dbconn);
+
+				DataTable dt = new DataTable();
+
+				// Do SELECT
+				mda.Fill(dt);
+
+				foreach(DataRow dr in dt.Rows)
+				{
+					Console.WriteLine("{0} : {1}", dr[0], dr[1]);
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+			finally
+			{
+				if(dbconn.State == ConnectionState.Open)
+				{
+					dbconn.Close();
+					dbconn.Dispose();
+				}
+			}
+		}
+
+
+		static void saveFile(string[] str){
+
+			Encoding enc = new System.Text.UTF8Encoding();
+			string fileName = "testlog.txt";
+			StreamWriter sw = new StreamWriter(fileName, false, enc);
+
+			foreach(string data in str){
+				sw.WriteLine(data);
+			}
+			sw.Close();
+		}
+	}
+}

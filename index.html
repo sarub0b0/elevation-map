@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>RadioMap</title>
+
+<!-- RadioMap 参照 -->
+<link href="css/main.css" rel="stylesheet" />
+
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?libraries=geometry&v=3&sensor=false&language=en"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+
+
+<script type="text/javascript" src="javascript/d3.js"></script>
+<script type="text/javascript" src="javascript/proj4.js"></script>
+<script type="text/javascript" src="javascript/elevation.js"></script>
+
+<script type="text/javascript">
+	//日本測地系の宣言
+	Proj4js.defs('[EPSG:4301]')= "+proj=longlat +ellps=bessel +towgs84=-146.336,506.832,680.254,0,0,0,0 +no_defs";
+
+	var projection= "+proj=longlat +ellps=bessel +towgs84=-146.336,506.832,680.254,0,0,0,0 +no_defs";
+
+	//Proj4jsエラー発生時の動作を登録
+	Proj4js.reportError = function(msg) {
+		alert(msg);
+	}
+
+	function transformJ2W(lon, lat) {
+		var source = new Proj4js.Proj('EPSG:4301');
+		var dest = new Proj4js.Proj('EPSG:4326');
+		var p = new Proj4js.Point(lon, lat);
+		Proj4js.transform(source, dest, p);
+		return p;
+	}
+
+	function main() {
+		var jlon = document.getElementById("jlon").value;
+		var jlat = document.getElementById("jlat").value;
+		var point = transformJ2W(jlon, jlat);
+		document.getElementById("wlon").value = point.x;
+		document.getElementById("wlat").value = point.y;
+		return;
+	}
+
+
+</script>
+</head>
+<body>
+
+
+	<form id="location">
+		<label>
+			<span>latitude</span>
+			<input type="text" id="latitude" size="18">
+		</label><br>
+		<label>
+			<span>longitude</span>
+			<input type="text" id="longitude" size="18">
+		</label><br>
+		<label>
+			<span>length</span>
+			<input type="text" id="length" size="18">
+		</label><br>
+		<label>
+			<span>width</span>
+			<input type="text" id="width" size="18">
+		</label><br>
+		<button id="btnGetElevation" type="button"onclick="getElevation()">GetElevation</button>
+		<label id="getData" >no data</label>
+		<label>:</label>
+		<label id="dataLength">0</label><br>
+		<button id="btnSendData" type="button" onclick="sendData()">SendData</button><br>
+	</form>
+
+	<div id="map"/>
+</body>
+</html>
